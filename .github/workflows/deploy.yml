@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master, development ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: composer:v2
+          coverage: none
+      - name: Require Vapor CLI
+        run: composer global require laravel/vapor-cli
+      - name: Install Modules
+        run: |
+          git clone --branch $BRANCH https://$GH_TOKEN@github.com/WilsonParker/ai-generate-models.git app/Modules/Models
+          git clone --branch $BRANCH https://$GH_TOKEN@github.com/WilsonParker/ai-generate-services.git app/Modules/Services
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Install Project Dependencies
+        run: |
+          composer config http-basic.nova.laravel.com $NOVA_ID $NOVA_KEY
+          composer install --no-dev --optimize-autoloader --ignore-platform-req=*
+        env:
+          NOVA_ID: ${{ secrets.NOVA_ID }}
+          NOVA_KEY: ${{ secrets.NOVA_KEY }}
+      - name: Deploy Environment
+        run: |
+          if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
+            vapor deploy production
+          elif [[ ${{ github.ref }} == 'refs/heads/development' ]]; then
+            vapor deploy development
+          else
+            echo "지원되지 않는 브랜치입니다."
+          fi
+        env:
+          VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}

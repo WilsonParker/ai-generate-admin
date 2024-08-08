@@ -1,0 +1,20 @@
+id: 47933
+name: ai-generate-admin
+environments:
+  development:
+    memory: 512
+    cli-memory: 256
+    runtime: docker
+    dockerfile: vapor.Dockerfile
+    timeout: 60
+    queue-timeout: 300
+    queues:
+      - ai-generate-admin-development
+      - ai-generate-admin-media-development
+    build:
+      - 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --optimize-autoloader'
+      - 'php artisan event:cache'
+      - 'php artisan route:cache'
+      - 'php artisan config:cache'
+    deploy:
+      - 'php artisan migrate --force'
