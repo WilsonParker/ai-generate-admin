@@ -10,6 +10,14 @@
 ## 설명
 [Laravel nova](https://nova.laravel.com/) 를 이용하여 구성하였습니다.
 
+## 개발 환경
+
+- php 8.2
+- laravel 10
+- sail (docker)
+    - mariadb
+- laravel/nova 4.0
+
 ## Relation
 
 ### Module
